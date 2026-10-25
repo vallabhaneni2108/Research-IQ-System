@@ -1,0 +1,31 @@
+# LLM
+langchain-groq
+langchain-openrouter
+
+# LangChain
+langchain
+langchain-core
+langchain-community
+
+# Agents / LangGraph
+langgraph
+
+# Web Search
+tavily-python
+
+# Web Scraping
+beautifulsoup4
+requests
+
+# Environment Variables
+python-dotenv
+
+# Data Validation
+pydantic
+
+# Terminal Output
+rich
+
+# API
+fastapi
+uvicorn
