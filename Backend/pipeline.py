@@ -31,17 +31,27 @@ def run_research_pipeline(topic: str) -> dict:
             "messages": [
                 (
                     "user",
-                    f"""Find recent, reliable and detailed information about:
+                    f"""Find recent and reliable information about:
 
 {topic}
 
-Search for multiple relevant sources and include their titles,
-URLs and useful information."""
+Find 3 relevant sources.
+
+Return ONLY:
+- Source title
+- URL
+- One short useful summary per source
+
+Do not write a long explanation.
+"""
                 )
             ]
         })
 
         state["search_results"] = search_result["messages"][-1].content
+
+        # HARD LIMIT
+        state["search_results"] = state["search_results"][:2500]
 
         print("\nSearch completed successfully.")
         print(state["search_results"])
@@ -64,7 +74,11 @@ URLs and useful information."""
     print("=" * 60)
 
     try:
+
         reader_agent = build_reader_agent()
+
+        # Send only limited search information
+        limited_search_results = state["search_results"][:2000]
 
         reader_result = reader_agent.invoke({
             "messages": [
@@ -75,20 +89,27 @@ URLs and useful information."""
 Topic:
 {topic}
 
-Below are the search results collected by the Search Agent:
+Search results:
+{limited_search_results}
 
-{state["search_results"]}
+Choose ONE most relevant URL.
 
-Choose the most relevant URL from these results and scrape it
-using your scraping tool.
+Use the scraping tool to read that URL.
 
-Focus on extracting detailed information useful for writing
-a research report."""
+Extract ONLY the most important facts useful for the final report.
+
+Return a concise summary.
+Do NOT reproduce the entire webpage.
+Do NOT provide a long explanation.
+"""
                 )
             ]
         })
 
         state["scraped_content"] = reader_result["messages"][-1].content
+
+        # HARD LIMIT
+        state["scraped_content"] = state["scraped_content"][:3000]
 
         print("\nReader completed successfully.")
         print(state["scraped_content"])
@@ -111,12 +132,11 @@ a research report."""
     research_combined = f"""
 SEARCH RESULTS:
 
-{state["search_results"]}
-
+{state["search_results"][:2500]}
 
 DETAILED RESEARCH:
 
-{state["scraped_content"]}
+{state["scraped_content"][:3000]}
 """
 
     try:
@@ -148,7 +168,7 @@ DETAILED RESEARCH:
     try:
 
         state["feedback"] = critic_chain.invoke({
-            "report": state["report"]
+            "report": state["report"][:6000]
         })
 
         print("\nCritic completed successfully.")
